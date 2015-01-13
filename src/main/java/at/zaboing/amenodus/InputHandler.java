@@ -10,6 +10,7 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -69,41 +70,51 @@ public class InputHandler extends Robot {
 		if (target != null) {
 			lookAt(target, mc.thePlayer);
 			if (distanceSq(target, mc.thePlayer) > MAX_RANGE_SQ) {
-				InventoryPlayer inventory = mc.thePlayer.inventory;
-				ItemStack current = inventory
-						.getStackInSlot(inventory.currentItem);
-				if (current == null || current.getItem() != Items.bow) {
-					ItemStack[] inv = inventory.mainInventory;
-					for (int i = 0; i < 9; i++) {
-						if (inv[i] != null && inv[i].getItem() == Items.bow) {
-							inventory.currentItem = i;
-							break;
-						}
-					}
-					for (int i = inv.length - 1; i >= 9; --i) {
-						if (inv[i] != null && inv[i].getItem() == Items.bow) {
-							ItemStack temp = inv[i];
-							inv[i] = inventory
-									.getStackInSlot(inventory.currentItem);
-							inventory.setInventorySlotContents(
-									inventory.currentItem, temp);
-							break;
-						}
-					}
-				}
-				current = inventory.getStackInSlot(inventory.currentItem);
-				if (current != null && current.getItem() == Items.bow) {
-					if (!mc.thePlayer.isUsingItem()) {
-						mousePress(java.awt.event.InputEvent.BUTTON3_MASK);
-					}
+				if (equipItem(Items.bow)) {
+					mousePress(java.awt.event.InputEvent.BUTTON3_MASK);
 				}
 			} else {
+				if (!equipItem(Items.diamond_sword))
+					if (!equipItem(Items.iron_sword))
+						if (!equipItem(Items.stone_sword))
+							if (!equipItem(Items.golden_sword))
+								if (!equipItem(Items.wooden_sword))
+									;
 				mc.playerController.attackEntity(mc.thePlayer, target);
 			}
 			if (target.isDead) {
 				target = null;
 			}
 		}
+	}
+
+	private boolean equipItem(Item item) {
+		Minecraft mc = Minecraft.getMinecraft();
+		InventoryPlayer inventory = mc.thePlayer.inventory;
+		ItemStack current = inventory.getStackInSlot(inventory.currentItem);
+		if (current == null || current.getItem() != item) {
+			ItemStack[] inv = inventory.mainInventory;
+			for (int i = 0; i < 9; i++) {
+				if (inv[i] != null && inv[i].getItem() == item) {
+					inventory.currentItem = i;
+					break;
+				}
+			}
+			for (int i = inv.length - 1; i >= 9; --i) {
+				if (inv[i] != null && inv[i].getItem() == item) {
+					ItemStack temp = inv[i];
+					inv[i] = inventory.getStackInSlot(inventory.currentItem);
+					inventory.setInventorySlotContents(inventory.currentItem,
+							temp);
+					break;
+				}
+			}
+		}
+		current = inventory.getStackInSlot(inventory.currentItem);
+		if (current != null && current.getItem() == item) {
+			return true;
+		}
+		return false;
 	}
 
 	private double distanceSq(Entity a, Entity b) {
